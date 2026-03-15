@@ -162,8 +162,8 @@ metrics = sustainability_metrics(df, restaurant_capacity_hf)
 # Plot trajectories
 # --------------------------------------------------
 fig_ts, ax1_ts = plt.subplots(figsize=(8, 4.8))
-ax1_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement", color="black")
-ax1_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF", color="blue")
+ax1_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement", color="blue")
+ax1_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF", color="orange")
 ax2_ts = ax1_ts.twinx()  # Instantiate a second axes that shares the same x-axis
 color2 = 'green'
 ax2_ts.set_ylabel("HF Menu Items", color=color2)
@@ -171,7 +171,8 @@ ax2_ts.plot(df["time"], df["HF Menu Items"], label="HF Menu Items", linestyle="d
             color=color2)
 ax2_ts.tick_params(axis='y', labelcolor=color2)
 ax2_ts.tick_params(axis='y', colors=color2)
-ax2_ts.axvline(fresh_duration, linestyle=":", alpha=0.7, label="End of intervention")
+ax2_ts.axvline(fresh_duration, linestyle=":", alpha=0.7, label="End of intervention",
+               color='red')
 ax1_ts.set_xlabel("Time (years)")
 ax1_ts.set_ylabel("Interest, Engagement")
 ax1_ts.set_title(

@@ -161,20 +161,27 @@ metrics = sustainability_metrics(df, restaurant_capacity_hf)
 # --------------------------------------------------
 # Plot trajectories
 # --------------------------------------------------
-fig_ts, ax_ts = plt.subplots(figsize=(8, 4.8))
-ax_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement")
-ax_ts.plot(df["time"], df["HF Menu Items"], label="HF Menu Items")
-ax_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF")
-ax_ts.axvline(fresh_duration, linestyle="--", alpha=0.7, label="End of intervention")
-ax_ts.set_xlabel("Time (years)")
-ax_ts.set_ylabel("Level")
-ax_ts.set_title(
+fig_ts, ax1_ts = plt.subplots(figsize=(8, 4.8))
+ax1_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement")
+ax1_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF")
+ax2_ts = ax1_ts.twinx()  # Instantiate a second axes that shares the same x-axis
+color2 = 'purple'
+ax2_ts.set_ylabel("HF Menu Items", color=color2)
+ax2_ts.plot(df["time"], df["HF Menu Items"], label="HF Menu Items", linestyle="dashed",
+            color=color2)
+ax2_ts.axvline(fresh_duration, linestyle="--", alpha=0.7, label="End of intervention")
+ax1_ts.set_xlabel("Time (years)")
+ax1_ts.set_ylabel("Level")
+ax1_ts.set_title(
     f"Trajectory for selected point: "
     f"C customer owner={selected_x:.2f}, "
     f"C menu interest={selected_y:.2f}"
 )
-ax_ts.legend()
-ax_ts.grid(True)
+# ax1_ts.legend()
+h1, l1 = ax1_ts.get_legend_handles_labels()
+h2, l2 = ax2_ts.get_legend_handles_labels()
+ax1_ts.legend(h1 + h2, l1 + l2, loc='upper left')
+ax1_ts.grid(True)
 st.pyplot(fig_ts)
 
 # --------------------------------------------------

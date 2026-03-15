@@ -17,8 +17,7 @@ st.sidebar.header("Fixed model settings")
 fresh_duration = st.sidebar.slider("FRESH duration", 0.0, 3.0, 1.0, 0.25)
 final_time = st.sidebar.slider("Final time", 2.0, 6.0, 3.0, 0.5)
 restaurant_capacity_hf = st.sidebar.slider("Restaurant capacity for HF", 0.0, 10.0, 8.0, 1.0)
-# dt = st.sidebar.select_slider("Time step", options=[0.01, 0.02, 0.05], value=0.02)
-dt = 0.02
+dt = st.sidebar.select_slider("Time step", options=[0.01, 0.02, 0.05], value=0.02)
 
 c_increasing_engagement = st.sidebar.slider("C increasing engagement", 0.0, 1.0, 0.5, 0.05)
 c_decreasing = st.sidebar.slider("C decreasing", 0.0, 1.5, 0.8, 0.05)
@@ -29,8 +28,7 @@ c_community_interest = st.sidebar.slider("C community interest", 0.0, 1.0, 0.5, 
 c_decay = st.sidebar.slider("C decay", 0.0, 2.5, 1.5, 0.05)
 max_restaurant_capacity = st.sidebar.slider("Max restaurant capacity", 10.0, 20.0, 10.0, 1.0)
 
-# grid_n = st.sidebar.slider("Grid size", 10, 50, 25, 5)
-grid_n = 25
+grid_n = st.sidebar.slider("Grid size", 10, 50, 25, 5)
 
 # --------------------------------------------------
 # Heatmap settings
@@ -48,17 +46,16 @@ with group2:
 
 heatmap_metric = col_a.selectbox(
     "Heatmap metric",
-    ["HF slope", "HF Menu Items final"]
-    # ["HF slope", "HF Menu Items final", "HF sustainability score"]
+    ["HF slope", "HF Menu Items final", "HF sustainability score"]
 )
 
-# classification_threshold = col_b.slider(
-#     "Sustained threshold for HF Menu Items",
-#     0.0,
-#     float(max(restaurant_capacity_hf, 0.5)),
-#     2.0,
-#     0.5
-# )
+classification_threshold = col_b.slider(
+    "Sustained threshold for HF Menu Items",
+    0.0,
+    float(max(restaurant_capacity_hf, 0.5)),
+    2.0,
+    0.5
+)
 
 selected_x = col_c.slider(
     "Selected C customer owner",
@@ -216,36 +213,36 @@ st.pyplot(fig_ts)
 # Binary sustainability map
 # --------------------------------------------------
 
-# st.subheader("Binary sustainability map")
-#
-# if heatmap_metric == "HF Menu Items final":
-#
-#     Z_binary = (Z > classification_threshold).astype(int)
-#
-#     fig_bin, ax_bin = plt.subplots(figsize=(7, 5.5))
-#
-#     im2 = ax_bin.imshow(
-#         Z_binary,
-#         origin="lower",
-#         extent=[x_vals.min(), x_vals.max(), y_vals.min(), y_vals.max()],
-#         aspect="auto",
-#         vmin=0,
-#         vmax=1
-#     )
-#
-#     ax_bin.scatter(
-#         selected_x,
-#         selected_y,
-#         color="red",
-#         marker="x",
-#         s=140,
-#         linewidths=2
-#     )
-#
-#     ax_bin.set_xlabel("C customer owner")
-#     ax_bin.set_ylabel("C menu interest")
-#     ax_bin.set_title("Binary sustainability region")
-#
-#     fig_bin.colorbar(im2, ax=ax_bin)
-#
-#     st.pyplot(fig_bin)
+st.subheader("Binary sustainability map (for HF Menu Items final)")
+
+if heatmap_metric == "HF Menu Items final":
+
+    Z_binary = (Z > classification_threshold).astype(int)
+
+    fig_bin, ax_bin = plt.subplots(figsize=(7, 5.5))
+
+    im2 = ax_bin.imshow(
+        Z_binary,
+        origin="lower",
+        extent=[x_vals.min(), x_vals.max(), y_vals.min(), y_vals.max()],
+        aspect="auto",
+        vmin=0,
+        vmax=1
+    )
+
+    ax_bin.scatter(
+        selected_x,
+        selected_y,
+        color="red",
+        marker="x",
+        s=140,
+        linewidths=2
+    )
+
+    ax_bin.set_xlabel("C customer owner")
+    ax_bin.set_ylabel("C menu interest")
+    ax_bin.set_title("Binary sustainability region")
+
+    fig_bin.colorbar(im2, ax=ax_bin)
+
+    st.pyplot(fig_bin)

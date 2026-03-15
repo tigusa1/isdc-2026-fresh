@@ -65,10 +65,18 @@ def simulate_fresh(
 
         menu_depletion = c_depletion * max_restaurant_capacity * H[k]
 
+        # NEED TO ADD THIS TO VENSIM
+        menu_signal = H[k] / max(restaurant_capacity_hf, 1e-9)
+
         increasing_engagement = (
-            c_customer_owner * I[k] * (1.0 - E[k])
-            + c_increasing_engagement * (1.0 - intervention_off)
+                c_customer_owner * I[k] * menu_signal * (1.0 - E[k])
+                + c_increasing_engagement * (1.0 - intervention_off)
         )
+
+        # increasing_engagement = (
+        #     c_customer_owner * I[k] * (1.0 - E[k])
+        #     + c_increasing_engagement * (1.0 - intervention_off)
+        # )
 
         decreasing_engagement = c_decreasing * E[k]
 
@@ -107,4 +115,32 @@ def summarize_run(df: pd.DataFrame, restaurant_capacity_hf: float) -> dict:
         "Customer Interest final": final_i,
         "HF sustainability score": sustainability_score,
         "HF Menu slope (tail)": slope,
+    }
+
+
+def sustainability_metrics(df, restaurant_capacity_hf):
+    final_h = float(df["HF Menu Items"].iloc[-1])
+    final_e = float(df["Restaurant owner engagement"].iloc[-1])
+    final_i = float(df["Customer Interest in HF"].iloc[-1])
+
+    sustainability_score = final_h / max(restaurant_capacity_hf, 1e-9)
+
+    n = len(df)
+    tail = max(5, n // 4)
+
+    t_tail = df["time"].iloc[-tail:].to_numpy()
+    h_tail = df["HF Menu Items"].iloc[-tail:].to_numpy()
+
+    dt_tail = t_tail[-1] - t_tail[0]
+    if dt_tail <= 0:
+        slope = 0.0
+    else:
+        slope = (h_tail[-1] - h_tail[0]) / dt_tail
+
+    return {
+        "HF Menu Items final": final_h,
+        "Restaurant owner engagement final": final_e,
+        "Customer Interest final": final_i,
+        "HF sustainability score": sustainability_score,
+        "HF slope": slope,
     }

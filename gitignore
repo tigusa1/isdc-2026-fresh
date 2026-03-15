@@ -1,13 +1,27 @@
+# Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
 .Python
-.venv/
-venv/
-env/
-.DS_Store
-.streamlit/secrets.toml
+
+# Packaging
 *.egg-info/
-figures/*.png
-figures/*.pdf
+build/
+dist/
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# OS files
+.DS_Store
+
+# Figures (optional)
+# figures/*.png
+# figures/*.pdf

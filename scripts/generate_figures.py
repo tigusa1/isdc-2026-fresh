@@ -3,11 +3,9 @@ from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
 
-from fresh_model import simulate_fresh
+from fresh_model import simulate_fresh, sustainability_metrics
 
 def main():
-    from pathlib import Path
-
     ROOT = Path(__file__).resolve().parents[1]  # repo root
     out_dir = ROOT / "figures"
     out_dir.mkdir(exist_ok=True)
@@ -35,6 +33,8 @@ def main():
     plt.close(fig)
 
     # Figure 2: tipping-point heatmap
+    flag_HF_slope = True
+
     grid_n = 40
     x_vals = np.linspace(0, 1, grid_n)
     y_vals = np.linspace(0, 1, grid_n)
@@ -48,7 +48,11 @@ def main():
                 fresh_duration=1.0,
                 restaurant_capacity_hf=8.0,
             )
-            Z[iy, ix] = df2["HF Menu Items"].iloc[-1]
+            if flag_HF_slope:
+                metrics = sustainability_metrics(df, restaurant_capacity_hf=8)
+                Z[iy, ix] = metrics["HF slope"]
+            else:
+                Z[iy, ix] = df2["HF Menu Items"].iloc[-1]
 
     fig2, ax2 = plt.subplots(figsize=(7, 5.5))
     im = ax2.imshow(

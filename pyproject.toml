@@ -1,0 +1,12 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "isdc-fresh"
+version = "0.1.0"
+description = "FRESH model and Streamlit interface"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["fresh_model", "streamlit_app"]

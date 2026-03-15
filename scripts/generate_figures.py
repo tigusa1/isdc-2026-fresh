@@ -5,9 +5,11 @@ import matplotlib.pyplot as plt
 
 from fresh_model import simulate_fresh
 
-
 def main():
-    out_dir = Path("figures")
+    from pathlib import Path
+
+    ROOT = Path(__file__).resolve().parents[1]  # repo root
+    out_dir = ROOT / "figures"
     out_dir.mkdir(exist_ok=True)
 
     # Figure 1: baseline trajectories

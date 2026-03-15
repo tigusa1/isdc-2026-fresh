@@ -2,6 +2,22 @@
 
 This repository contains the code and model files for a system dynamics analysis of the FRESH intervention, which aims to increase healthy food (HF) adoption in restaurants in low-income neighborhoods.
 
+## Quick Start
+
+To run the interactive model exploration tool:
+
+```
+git clone https://github.com/tigusa1/isdc-2026-fresh
+cd ISDC-2026-FRESH
+python -m venv venv
+source venv/bin/activate
+pip install -e .
+pip install -r requirements.txt
+python -m streamlit run streamlit_app/app.py
+```
+
+The Streamlit interface allows interactive exploration of the system dynamics model and visualizes tipping-point behavior in healthy food adoption.
+
 ## Contents
 
 - `vensim/` — Vensim PLE model with stock-and-flow graphics
@@ -9,6 +25,15 @@ This repository contains the code and model files for a system dynamics analysis
 - `streamlit_app/` — interactive Streamlit app for tipping-point exploration
 - `scripts/` — reproducible figure-generation scripts
 - `figures/` — output figures for the paper
+
+## Architecture
+
+The repository separates the reusable simulation model from the user interface:
+
+- `fresh_model` contains the core simulation logic
+- `streamlit_app` provides an interactive interface for exploring model behavior
+
+The model can therefore be used independently for scripts, notebooks, or other analyses.
 
 ## Main ideas
 
@@ -18,18 +43,32 @@ The model focuses on implementation and sustainability dynamics through three ma
 - HF menu items
 - Customer interest in HF
 
-The model explores whether reinforcing feedback between customer demand and restaurant behavior is strong enough to sustain HF adoption after the intervention ends.
+The model explores whether reinforcing feedback between customer demand and restaurant
+behavior is strong enough to sustain HF adoption after the intervention ends.
+
+The Python implementation reproduces the structure of the Vensim model and allows
+systematic parameter exploration and visualization of tipping-point behavior.
 
 ## Installation
 
 Clone the repository and install dependencies:
 
-`pip install -r requirements.txt`
+```
+git clone https://github.com/tigusa1/isdc-2026-fresh
+cd ISDC-2026-FRESH
+python -m venv venv
+source venv/bin/activate
+# Register the repository as an editable Python package
+# so `fresh_model` can be imported by the Streamlit app.
+pip install -e .
+pip install -r requirements.txt
+python -m streamlit run streamlit_app/app.py
+```
 
 ## File structure
 
 ```
-fresh-system-dynamics-model/
+ISDC-2026-FRESH/
 ├── README.md
 ├── LICENSE
 ├── requirements.txt
@@ -57,17 +96,16 @@ The model explores the implementation and sustainability dynamics of the FRESH i
 
 ## Running the Streamlit App
 
-Install dependencies:
-
-`pip install -r requirements.txt`
-
 Run the app:
 
-`streamlit run app.py`
+`python -m streamlit run streamlit_app/app.py`
 
-Generate the figures used in the figure
+Generate the figures used in the paper:
 
 `python scripts/generate_figures.py`
+
+The Streamlit interface allows interactive exploration of key parameters and visualizes
+regions where reinforcing feedback produces sustained adoption of healthy food items.
 
 ## Tag the Version Used in the Paper
 
@@ -142,8 +180,15 @@ The simulation code and Streamlit visualization tool used in this study are publ
 
 ## Notes
 
-`notebook/`
+`notebooks/`
 
 short notebook showing:
 - baseline simulation
 - tipping-point heatmap
+
+## Suggested additions later
+
+Once this is working, the next useful files would be:
+- scripts/generate_phase_diagram.py
+- scripts/validate_against_vensim.py
+- notebooks/explore_tipping_points.ipynb

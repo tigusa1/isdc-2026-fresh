@@ -4,7 +4,6 @@ import streamlit as st
 
 from fresh_model import simulate_fresh, summarize_run
 
-
 st.set_page_config(page_title="FRESH tipping point explorer", layout="wide")
 
 st.title("FRESH tipping point explorer")

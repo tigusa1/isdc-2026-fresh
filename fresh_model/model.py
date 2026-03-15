@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 
-
 def simulate_fresh(
     final_time=3.0,
     dt=0.02,

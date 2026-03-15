@@ -1,8 +1,15 @@
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from fresh_model.model import simulate_fresh, sustainability_metrics
+
 import numpy as np
 import matplotlib.pyplot as plt
 import streamlit as st
-
-from fresh_model.model import simulate_fresh, sustainability_metrics
 
 st.set_page_config(page_title="FRESH tipping point explorer", layout="wide")
 

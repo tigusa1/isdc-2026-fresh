@@ -42,9 +42,7 @@ def simulate_fresh(
 
     for k in range(n_steps - 1):
         intervention_off = 1.0 if t[k] >= fresh_duration else 0.0
-
         community_exposure = c_owner_community * E[k]
-
         increasing_interest = (
             (
                 c_community_interest * max_restaurant_capacity * community_exposure
@@ -53,31 +51,28 @@ def simulate_fresh(
             * H[k]
             * (1.0 - I[k])
         )
-
         decaying_interest = c_decay * I[k]
-
         menu_addition = (
             c_owner_menu
             * (max_restaurant_capacity ** 2)
             * E[k]
             * (restaurant_capacity_hf - H[k])
         )
-
         menu_depletion = c_depletion * max_restaurant_capacity * H[k]
 
         # NEED TO ADD THIS TO VENSIM
-        menu_signal = H[k] / max(restaurant_capacity_hf, 1e-9)
-
-        increasing_engagement = (
-                c_customer_owner * I[k] * menu_signal * (1.0 - E[k])
+        flag_menu_signal = False
+        if flag_menu_signal:
+            menu_signal = H[k] / max(restaurant_capacity_hf, 1e-9)
+            increasing_engagement = (
+                    c_customer_owner * I[k] * menu_signal * (1.0 - E[k])
+                    + c_increasing_engagement * (1.0 - intervention_off)
+            )
+        else:
+            increasing_engagement = (
+                c_customer_owner * I[k] * (1.0 - E[k])
                 + c_increasing_engagement * (1.0 - intervention_off)
-        )
-
-        # increasing_engagement = (
-        #     c_customer_owner * I[k] * (1.0 - E[k])
-        #     + c_increasing_engagement * (1.0 - intervention_off)
-        # )
-
+            )
         decreasing_engagement = c_decreasing * E[k]
 
         dE = increasing_engagement - decreasing_engagement
@@ -85,7 +80,7 @@ def simulate_fresh(
         dI = increasing_interest - decaying_interest
 
         E[k + 1] = np.clip(E[k] + dt * dE, 0.0, 1.0)
-        H[k + 1] = np.clip(E[k] * 0 + H[k] + dt * dH, 0.0, restaurant_capacity_hf)
+        H[k + 1] = np.clip(H[k] + dt * dH, 0.0, restaurant_capacity_hf)
         I[k + 1] = np.clip(I[k] + dt * dI, 0.0, 1.0)
 
     return pd.DataFrame(

@@ -19,23 +19,22 @@ st.title("FRESH tipping point explorer")
 # Sidebar: fixed parameters
 # --------------------------------------------------
 
-st.sidebar.header("Fixed model settings")
+st.sidebar.header("Model constants")
 
-fresh_duration = st.sidebar.slider("FRESH duration", 0.0, 3.0, 1.0, 0.25)
-final_time = st.sidebar.slider("Final time", 2.0, 6.0, 3.0, 0.5)
+fresh_duration = st.sidebar.slider("FRESH duration", 0.0, 2.0, 1.0, 0.25)
+final_time = st.sidebar.slider("Final time", 2.0, 5.0, 3.0, 0.5)
 restaurant_capacity_hf = st.sidebar.slider("Restaurant capacity for HF", 0.0, 10.0, 8.0, 1.0)
 # dt = st.sidebar.select_slider("Time step", options=[0.01, 0.02, 0.05], value=0.02)
 dt = 0.02
 
-c_increasing_engagement = st.sidebar.slider("C increasing engagement", 0.0, 1.0, 0.5, 0.05)
-c_decreasing = st.sidebar.slider("C decreasing", 0.0, 1.5, 0.8, 0.05)
-c_owner_menu = st.sidebar.slider("C owner menu", 0.0, 1.0, 0.25, 0.05)
-c_depletion = st.sidebar.slider("C depletion", 0.0, 1.5, 0.8, 0.05)
-c_owner_community = st.sidebar.slider("C owner community", 0.0, 1.0, 0.5, 0.05)
-c_community_interest = st.sidebar.slider("C community interest", 0.0, 1.0, 0.5, 0.05)
-c_decay = st.sidebar.slider("C decay", 0.0, 2.5, 1.5, 0.05)
+c_increasing_engagement = st.sidebar.slider("Owner increasing engagement", 0.0, 1.0, 0.3, 0.05)
+c_decreasing = st.sidebar.slider("Owner decreasing engagement", 0.0, 1.5, 0.8, 0.05)
+c_owner_menu = st.sidebar.slider("Owner engagement -> menu", 0.0, 1.0, 0.2, 0.05)
+c_depletion = st.sidebar.slider("Menu depletion", 0.0, 1.5, 0.6, 0.05)
+c_owner_community = st.sidebar.slider("Owner -> community", 0.0, 1.0, 0.5, 0.05)
+c_community_interest = st.sidebar.slider("Community interest -> consumer", 0.0, 1.0, 0.3, 0.05)
+c_decay = st.sidebar.slider("Consumer interest decay", 0.0, 2.5, 0.6, 0.05)
 max_restaurant_capacity = st.sidebar.slider("Max restaurant capacity", 10.0, 20.0, 10.0, 1.0)
-
 # grid_n = st.sidebar.slider("Grid size", 10, 50, 25, 5)
 grid_n = 25
 
@@ -67,21 +66,11 @@ heatmap_metric = col_a.selectbox(
 #     0.5
 # )
 
-selected_x = col_c.slider(
-    "Selected C customer owner",
-    0.0,
-    1.0,
-    0.05,
-    0.05
-)
+x_lbl = "Customer - owner interaction"
+y_lbl = "Menu - customer interest interaction"
 
-selected_y = col_d.slider(
-    "Selected C menu interest",
-    0.0,
-    1.0,
-    0.5,
-    0.05
-)
+selected_x = col_c.slider( x_lbl, 0.0, 1.0, 0.05, 0.05 )
+selected_y = col_d.slider( y_lbl, 0.0, 1.0, 0.5, 0.05 )
 
 # --------------------------------------------------
 # Compute heatmap grid
@@ -93,7 +82,6 @@ Z = np.zeros((grid_n, grid_n))
 
 for iy, y in enumerate(y_vals):
     for ix, x in enumerate(x_vals):
-
         df_tmp = simulate_fresh(
             final_time=final_time,
             dt=dt,
@@ -124,24 +112,16 @@ for iy, y in enumerate(y_vals):
 
 Z = np.nan_to_num(Z)
 
-st.write(
-    f"Selected point: C customer owner = {selected_x:.2f}, "
-    f"C menu interest = {selected_y:.2f}"
-)
-
 # --------------------------------------------------
 # Static heatmap with selected point
 # --------------------------------------------------
-
 fig_hm, ax_hm = plt.subplots(figsize=(7, 5.5))
-
 im = ax_hm.imshow(
     Z,
     origin="lower",
     extent=[x_vals.min(), x_vals.max(), y_vals.min(), y_vals.max()],
     aspect="auto"
 )
-
 ax_hm.scatter(
     selected_x,
     selected_y,
@@ -150,19 +130,15 @@ ax_hm.scatter(
     s=140,
     linewidths=2
 )
-
-ax_hm.set_xlabel("C customer owner")
-ax_hm.set_ylabel("C menu interest")
+ax_hm.set_xlabel(x_lbl)
+ax_hm.set_ylabel(y_lbl)
 ax_hm.set_title(f"Heatmap of {heatmap_metric}")
-
 fig_hm.colorbar(im, ax=ax_hm)
-
 st.pyplot(fig_hm)
 
 # --------------------------------------------------
 # Run simulation at selected point
 # --------------------------------------------------
-
 df = simulate_fresh(
     final_time=final_time,
     dt=dt,
@@ -183,46 +159,36 @@ df = simulate_fresh(
 metrics = sustainability_metrics(df, restaurant_capacity_hf)
 
 # --------------------------------------------------
+# Plot trajectories
+# --------------------------------------------------
+fig_ts, ax_ts = plt.subplots(figsize=(8, 4.8))
+ax_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement")
+ax_ts.plot(df["time"], df["HF Menu Items"], label="HF Menu Items")
+ax_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF")
+ax_ts.axvline(fresh_duration, linestyle="--", alpha=0.7, label="End of intervention")
+ax_ts.set_xlabel("Time (years)")
+ax_ts.set_ylabel("Level")
+ax_ts.set_title(
+    f"Trajectory for selected point: "
+    f"C customer owner={selected_x:.2f}, "
+    f"C menu interest={selected_y:.2f}"
+)
+ax_ts.legend()
+ax_ts.grid(True)
+st.pyplot(fig_ts)
+
+# --------------------------------------------------
 # Display summary metrics
 # --------------------------------------------------
-
 c1, c2, c3, c4 = st.columns(4)
-
 c1.metric("HF Menu Items (final)", f"{metrics['HF Menu Items final']:.2f}")
 c2.metric("Engagement (final)", f"{metrics['Restaurant owner engagement final']:.2f}")
 c3.metric("Interest (final)", f"{metrics['Customer Interest final']:.2f}")
 c4.metric("HF slope", f"{metrics['HF slope']:.3f}")
 
 # --------------------------------------------------
-# Plot trajectories
-# --------------------------------------------------
-
-fig_ts, ax_ts = plt.subplots(figsize=(8, 4.8))
-
-ax_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement")
-ax_ts.plot(df["time"], df["HF Menu Items"], label="HF Menu Items")
-ax_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF")
-
-ax_ts.axvline(fresh_duration, linestyle="--", alpha=0.7, label="End of intervention")
-
-ax_ts.set_xlabel("Time (years)")
-ax_ts.set_ylabel("Level")
-
-ax_ts.set_title(
-    f"Trajectory for selected point: "
-    f"C customer owner={selected_x:.2f}, "
-    f"C menu interest={selected_y:.2f}"
-)
-
-ax_ts.legend()
-ax_ts.grid(True)
-
-st.pyplot(fig_ts)
-
-# --------------------------------------------------
 # Binary sustainability map
 # --------------------------------------------------
-
 # st.subheader("Binary sustainability map")
 #
 # if heatmap_metric == "HF Menu Items final":

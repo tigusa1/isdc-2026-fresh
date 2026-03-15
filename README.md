@@ -88,11 +88,12 @@ ISDC-2026-FRESH/
     └── .gitkeep
 ```
 
-This repository contains the simulation code for the system dynamics model used in:
+This repository contains the simulation code for the system dynamics model used in
+the following conference abstract:
 
-Igusa et al. (2026) Modeling Healthy Food Adoption in Restaurants.
-
+Daas, C, et al. (2026, July 20–24). *Modeling healthy food adoption in restaurants* 
 The model explores the implementation and sustainability dynamics of the FRESH intervention.
+2026 International System Dynamics Conference
 
 ## Running the Streamlit App
 
@@ -166,11 +167,18 @@ You can deploy the Streamlit app online using **Streamlit Community Cloud.
 
 Then readers can interact with the tipping-point explorer directly.
 
-## Suggested Citation Block
+## Citation
 
-If you use this code, please cite:
+If you use this code or refer to the model in your research, please cite both the software and the associated conference abstract:
 
-Igusa, T. et al. (2026). System dynamics modeling of healthy food adoption in restaurants.
+### Research Abstract
+Daas, C, et al. (2026, July 20–24). *Modeling healthy food adoption in restaurants* 
+The model explores the implementation and sustainability dynamics of the FRESH intervention.
+2026 International System Dynamics Conference
+
+### Software
+Igusa, T. (2026). *FRESH system dynamics simulation* (Version 1.0.0)
+[Source code]. GitHub. https://github.com/tigusa1/isdc-2026-fresh
 
 ## Recommendation for your paper
 

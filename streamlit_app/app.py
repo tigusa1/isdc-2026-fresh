@@ -18,7 +18,6 @@ st.title("FRESH tipping point explorer")
 # --------------------------------------------------
 # Sidebar: fixed parameters
 # --------------------------------------------------
-
 st.sidebar.header("Model constants")
 
 fresh_duration          = st.sidebar.slider("FRESH duration",         0.0, 2.0, 1.0, 0.25)
@@ -76,6 +75,28 @@ selected_x = col_c.slider( x_lbl, 0.0, 1.0, 0.1, 0.05 )
 selected_y = col_d.slider( y_lbl, 0.0, 1.0, 0.7, 0.05 )
 
 # --------------------------------------------------
+# Run simulation at selected point
+# --------------------------------------------------
+df,HF_slope_selected = simulate_fresh(
+    final_time=final_time,
+    dt=dt,
+    fresh_duration=fresh_duration,
+    max_restaurant_capacity=max_restaurant_capacity,
+    restaurant_capacity_hf=restaurant_capacity_hf,
+    c_increasing_engagement=c_increasing_engagement,
+    c_decreasing=c_decreasing,
+    c_customer_owner=selected_x,
+    c_owner_menu=c_owner_menu,
+    c_depletion=c_depletion,
+    c_owner_community=c_owner_community,
+    c_community_interest=c_community_interest,
+    c_menu_interest=selected_y,
+    c_decay=c_decay,
+)
+
+metrics = sustainability_metrics(df, restaurant_capacity_hf)
+
+# --------------------------------------------------
 # Compute heatmap grid
 # --------------------------------------------------
 x_vals = np.linspace(0.0, 1.0, grid_n)
@@ -130,7 +151,14 @@ im = ax_hm.imshow(
     extent=[x_vals.min(), x_vals.max(), y_vals.min(), y_vals.max()],
     aspect="auto"
 )
-ax_hm.scatter( selected_x, selected_y, color="red", marker="$-$", s=70, linewidths=2 )
+if HF_slope_selected<0:
+    marker="$-$"
+    sz = 70
+else:
+    marker="+"
+    sz = 90
+
+ax_hm.scatter( selected_x, selected_y, color="red", marker=marker, s=sz, linewidths=2 )
 ax_hm.scatter( selected_x, selected_y, edgecolors="red", marker="o", s=180, linewidths=1,
                facecolors="none" )
 if flag_paper:
@@ -156,30 +184,10 @@ ax_hm.set_title(f"Heatmap of {ttl}", y=1.05)
 st.pyplot(fig_hm)
 
 # --------------------------------------------------
-# Run simulation at selected point
-# --------------------------------------------------
-df,_ = simulate_fresh(
-    final_time=final_time,
-    dt=dt,
-    fresh_duration=fresh_duration,
-    max_restaurant_capacity=max_restaurant_capacity,
-    restaurant_capacity_hf=restaurant_capacity_hf,
-    c_increasing_engagement=c_increasing_engagement,
-    c_decreasing=c_decreasing,
-    c_customer_owner=selected_x,
-    c_owner_menu=c_owner_menu,
-    c_depletion=c_depletion,
-    c_owner_community=c_owner_community,
-    c_community_interest=c_community_interest,
-    c_menu_interest=selected_y,
-    c_decay=c_decay,
-)
-
-metrics = sustainability_metrics(df, restaurant_capacity_hf)
-
-# --------------------------------------------------
 # Plot trajectories
 # --------------------------------------------------
+flag_legend = True
+
 fig_ts, ax1_ts = plt.subplots(figsize=(8, 4.8))
 ax1_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement", color="blue")
 ax1_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF", color="orange")
@@ -206,7 +214,6 @@ ax1_ts.set_title(
     fontweight="bold",
 )
 
-flag_legend = True
 if flag_legend:
     h1, l1 = ax1_ts.get_legend_handles_labels()
     h2, l2 = ax2_ts.get_legend_handles_labels()

@@ -84,7 +84,7 @@ Z = np.zeros((grid_n, grid_n))
 for iy, y in enumerate(y_vals):
     for ix, x in enumerate(x_vals):
 
-        df_tmp = simulate_fresh(
+        df_tmp,_ = simulate_fresh(
             final_time=final_time,
             dt=dt,
             fresh_duration=fresh_duration,
@@ -153,7 +153,7 @@ st.pyplot(fig_hm)
 # Run simulation at selected point
 # --------------------------------------------------
 
-df = simulate_fresh(
+df,_ = simulate_fresh(
     final_time=final_time,
     dt=dt,
     fresh_duration=fresh_duration,

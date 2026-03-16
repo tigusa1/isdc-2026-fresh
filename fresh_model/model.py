@@ -31,10 +31,12 @@ def simulate_fresh(
 
     n_steps = int(final_time / dt) + 1
     t = np.linspace(0.0, final_time, n_steps)
+    k_end_intervention = np.argmax(t >= fresh_duration)
 
     E = np.zeros(n_steps)
     H = np.zeros(n_steps)
     I = np.zeros(n_steps)
+    DE = np.zeros(n_steps)
 
     E[0] = e0
     H[0] = h0
@@ -44,53 +46,37 @@ def simulate_fresh(
         intervention_off = 1.0 if t[k] >= fresh_duration else 0.0
         community_exposure = c_owner_community * E[k]
         increasing_interest = (
-            (
                 c_community_interest * max_restaurant_capacity * community_exposure
-                + c_menu_interest
-            )
-            * H[k]
-            * (1.0 - I[k])
-        )
+                + c_menu_interest ) * H[k] * (1.0 - I[k])
         decaying_interest = c_decay * I[k]
-        menu_addition = (
-            c_owner_menu
-            * (max_restaurant_capacity ** 2)
-            * E[k]
+        menu_addition = c_owner_menu * (max_restaurant_capacity ** 2) * E[k] \
             * (restaurant_capacity_hf - H[k])
-        )
         menu_depletion = c_depletion * max_restaurant_capacity * H[k]
 
         # NEED TO ADD THIS TO VENSIM
         flag_menu_signal = False
         if flag_menu_signal:
             menu_signal = H[k] / max(restaurant_capacity_hf, 1e-9)
-            increasing_engagement = (
-                    c_customer_owner * I[k] * menu_signal * (1.0 - E[k])
-                    + c_increasing_engagement * (1.0 - intervention_off)
-            )
         else:
-            increasing_engagement = (
-                c_customer_owner * I[k] * (1.0 - E[k])
-                + c_increasing_engagement * (1.0 - intervention_off)
-            )
+            menu_signal = 1.0
+
+        increasing_engagement = (
+                c_customer_owner * I[k] * menu_signal * (1.0 - E[k])
+                + c_increasing_engagement * (1.0 - intervention_off))
         decreasing_engagement = c_decreasing * E[k]
 
         dE = increasing_engagement - decreasing_engagement
         dH = menu_addition - menu_depletion
         dI = increasing_interest - decaying_interest
+        DE[k + 1] = increasing_engagement
 
         E[k + 1] = np.clip(E[k] + dt * dE, 0.0, 1.0)
         H[k + 1] = np.clip(H[k] + dt * dH, 0.0, restaurant_capacity_hf)
         I[k + 1] = np.clip(I[k] + dt * dI, 0.0, 1.0)
 
-    return pd.DataFrame(
-        {
-            "time": t,
-            "Restaurant owner engagement": E,
-            "HF Menu Items": H,
-            "Customer Interest in HF": I,
-        }
-    )
+    return pd.DataFrame({"time": t, "Restaurant owner engagement": E,
+        "HF Menu Items": H, "Customer Interest in HF": I, "Increasing engagement": DE}), \
+        (H[-1] - H[k_end_intervention]) / (t[-1] - t[k_end_intervention])
 
 
 def summarize_run(df: pd.DataFrame, restaurant_capacity_hf: float) -> dict:

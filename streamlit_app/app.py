@@ -21,20 +21,23 @@ st.title("FRESH tipping point explorer")
 
 st.sidebar.header("Model constants")
 
-fresh_duration = st.sidebar.slider("FRESH duration", 0.0, 2.0, 1.0, 0.25)
-final_time = st.sidebar.slider("Final time", 2.0, 5.0, 3.0, 0.5)
-restaurant_capacity_hf = st.sidebar.slider("Restaurant capacity for HF", 0.0, 10.0, 8.0, 1.0)
+fresh_duration          = st.sidebar.slider("FRESH duration",         0.0, 2.0, 1.0, 0.25)
+final_time              = st.sidebar.slider("Final time",             2.0, 5.0, 3.0, 0.5 )
 # dt = st.sidebar.select_slider("Time step", options=[0.01, 0.02, 0.05], value=0.02)
 dt = 0.02
 
-c_increasing_engagement = st.sidebar.slider("Owner increasing engagement", 0.0, 1.0, 0.3, 0.05)
-c_decreasing = st.sidebar.slider("Owner decreasing engagement", 0.0, 1.5, 0.8, 0.05)
-c_owner_menu = st.sidebar.slider("Owner engagement -> menu", 0.0, 1.0, 0.2, 0.05)
-c_depletion = st.sidebar.slider("Menu depletion", 0.0, 1.5, 0.6, 0.05)
-c_owner_community = st.sidebar.slider("Owner -> community", 0.0, 1.0, 0.5, 0.05)
-c_community_interest = st.sidebar.slider("Community interest -> consumer", 0.0, 1.0, 0.3, 0.05)
-c_decay = st.sidebar.slider("Consumer interest decay", 0.0, 2.5, 0.6, 0.05)
-max_restaurant_capacity = st.sidebar.slider("Max restaurant capacity", 10.0, 20.0, 10.0, 1.0)
+restaurant_capacity_hf  = st.sidebar.slider("Restaurant capacity for HF",
+                                                                      0.0, 10., 9.0, 1.0 )
+c_increasing_engagement = st.sidebar.slider("Owner increasing engagement",
+                                                                      0.0, 1.0, 0.6, 0.05)
+c_decreasing      = st.sidebar.slider("Owner decreasing engagement",  0.0, 1.5, 0.5, 0.05)
+c_owner_menu      = st.sidebar.slider("Owner engagement -> menu",     0.0, 1.0, 0.2, 0.05)
+c_depletion       = st.sidebar.slider("Menu depletion",               0.0, 1.5, 0.8, 0.05)
+c_owner_community = st.sidebar.slider("Owner -> community",           0.0, 1.0, 0.5, 0.05)
+c_community_interest = st.sidebar.slider("Community interest -> consumer",
+                                                                      0.0, 1.0, 0.3, 0.05)
+c_decay = st.sidebar.slider("Consumer interest decay",                0.0, 2.5, 0.6, 0.05)
+max_restaurant_capacity = st.sidebar.slider("Max restaurant capacity",10., 20., 10., 1.0 )
 # grid_n = st.sidebar.slider("Grid size", 10, 50, 25, 5)
 grid_n = 25
 
@@ -69,8 +72,8 @@ heatmap_metric = col_a.selectbox(
 x_lbl = "Customer - owner interaction"
 y_lbl = "Menu - customer interest interaction"
 
-selected_x = col_c.slider( x_lbl, 0.0, 1.0, 0.05, 0.05 )
-selected_y = col_d.slider( y_lbl, 0.0, 1.0, 0.5, 0.05 )
+selected_x = col_c.slider( x_lbl, 0.0, 1.0, 0.1, 0.05 )
+selected_y = col_d.slider( y_lbl, 0.0, 1.0, 0.7, 0.05 )
 
 # --------------------------------------------------
 # Compute heatmap grid
@@ -82,7 +85,7 @@ Z = np.zeros((grid_n, grid_n))
 
 for iy, y in enumerate(y_vals):
     for ix, x in enumerate(x_vals):
-        df_tmp = simulate_fresh(
+        df_tmp,HF_slope = simulate_fresh(
             final_time=final_time,
             dt=dt,
             fresh_duration=fresh_duration,
@@ -108,38 +111,54 @@ for iy, y in enumerate(y_vals):
             Z[iy, ix] = metrics_tmp["HF sustainability score"]
 
         else:
-            Z[iy, ix] = metrics_tmp["HF slope"]
+            # Z[iy, ix] = metrics_tmp["HF slope"]
+            Z[iy, ix] = HF_slope
 
 Z = np.nan_to_num(Z)
 
 # --------------------------------------------------
 # Static heatmap with selected point
 # --------------------------------------------------
+flag_paper = False
+flag_tipping_points = False
+
 fig_hm, ax_hm = plt.subplots(figsize=(7, 5.5))
+
 im = ax_hm.imshow(
-    Z,
+    Z>=0 if flag_tipping_points else Z,
     origin="lower",
     extent=[x_vals.min(), x_vals.max(), y_vals.min(), y_vals.max()],
     aspect="auto"
 )
-ax_hm.scatter(
-    selected_x,
-    selected_y,
-    color="red",
-    marker="x",
-    s=140,
-    linewidths=2
-)
+ax_hm.scatter( selected_x, selected_y, color="red", marker="$-$", s=70, linewidths=2 )
+ax_hm.scatter( selected_x, selected_y, edgecolors="red", marker="o", s=180, linewidths=1,
+               facecolors="none" )
+if flag_paper:
+    show_x, show_y = (0.7,0.1)
+    ax_hm.scatter( show_x, show_y, color="red", marker="+", s=90, linewidths=2 )
+    ax_hm.scatter( show_x, show_y, edgecolors="red", marker="o", s=180, linewidths=1,
+                   facecolors="none" )
+
 ax_hm.set_xlabel(x_lbl)
 ax_hm.set_ylabel(y_lbl)
-ax_hm.set_title(f"Heatmap of {heatmap_metric}")
-fig_hm.colorbar(im, ax=ax_hm)
+cbar = fig_hm.colorbar(im, ax=ax_hm)
+
+if heatmap_metric == "HF slope":
+    cbar_lbl = 'Slope of HF offerings'
+    ttl = 'post-intervention slope of HF offerings'
+elif heatmap_metric == "HF Menu Items final":
+    cbar_lbl = "HF Menu Items"
+    ttl = 'final number of HF menu items'
+
+cbar.set_label(cbar_lbl, rotation=90, labelpad=15)
+ax_hm.set_title(f"Heatmap of {ttl}", y=1.05)
+
 st.pyplot(fig_hm)
 
 # --------------------------------------------------
 # Run simulation at selected point
 # --------------------------------------------------
-df = simulate_fresh(
+df,_ = simulate_fresh(
     final_time=final_time,
     dt=dt,
     fresh_duration=fresh_duration,
@@ -164,6 +183,9 @@ metrics = sustainability_metrics(df, restaurant_capacity_hf)
 fig_ts, ax1_ts = plt.subplots(figsize=(8, 4.8))
 ax1_ts.plot(df["time"], df["Restaurant owner engagement"], label="Restaurant owner engagement", color="blue")
 ax1_ts.plot(df["time"], df["Customer Interest in HF"], label="Customer Interest in HF", color="orange")
+ax1_ts.set_ylim([0.,1.])
+# ax1_ts.plot(df["time"], df["Increasing engagement"], label="Increasing engagement", color="green")
+
 ax2_ts = ax1_ts.twinx()  # Instantiate a second axes that shares the same x-axis
 color2 = 'green'
 ax2_ts.set_ylabel("HF Menu Items", color=color2)
@@ -173,18 +195,30 @@ ax2_ts.tick_params(axis='y', labelcolor=color2)
 ax2_ts.tick_params(axis='y', colors=color2)
 ax2_ts.axvline(fresh_duration, linestyle=":", alpha=0.7, label="End of intervention",
                color='red')
+ax2_ts.set_ylim([0.,8.])
+
 ax1_ts.set_xlabel("Time (years)")
 ax1_ts.set_ylabel("Interest, Engagement")
 ax1_ts.set_title(
-    f"Trajectory for selected point: "
-    f"C customer owner={selected_x:.2f}, "
-    f"C menu interest={selected_y:.2f}"
+    f"Customer-owner interaction={selected_x:.1f}, "
+    f"Menu-customer interest interaction={selected_y:.1f}",
+    y=1.05,
+    fontweight="bold",
 )
-# ax1_ts.legend()
-h1, l1 = ax1_ts.get_legend_handles_labels()
-h2, l2 = ax2_ts.get_legend_handles_labels()
-ax1_ts.legend(h1 + h2, l1 + l2, loc='upper left')
-ax1_ts.grid(True)
+
+flag_legend = True
+if flag_legend:
+    h1, l1 = ax1_ts.get_legend_handles_labels()
+    h2, l2 = ax2_ts.get_legend_handles_labels()
+    ax1_ts.legend(h1 + h2, l1 + l2,
+               loc='lower right',
+#              bbox_to_anchor=(0.98, 0.17),
+               bbox_to_anchor=(0.98, 0.57),
+               frameon=True,  # Ensure the border/box is active
+               facecolor='white',  # Set the background color
+               framealpha=1)  # Set transparency (1 = fully opaque, 0 = invisible)
+    ax1_ts.grid(True)
+
 st.pyplot(fig_ts)
 
 # --------------------------------------------------

@@ -11,7 +11,7 @@ def main():
     out_dir.mkdir(exist_ok=True)
 
     # Figure 1: baseline trajectories
-    df = simulate_fresh(
+    df,_ = simulate_fresh(
         c_customer_owner=0.0,
         c_menu_interest=0.5,
         fresh_duration=1.0,
@@ -42,7 +42,7 @@ def main():
 
     for iy, y in enumerate(y_vals):
         for ix, x in enumerate(x_vals):
-            df2 = simulate_fresh(
+            df2,_ = simulate_fresh(
                 c_customer_owner=float(x),
                 c_menu_interest=float(y),
                 fresh_duration=1.0,

@@ -217,13 +217,14 @@ ax1_ts.set_title(
 if flag_legend:
     h1, l1 = ax1_ts.get_legend_handles_labels()
     h2, l2 = ax2_ts.get_legend_handles_labels()
-    ax1_ts.legend(h1 + h2, l1 + l2,
-               loc='lower right',
-#              bbox_to_anchor=(0.98, 0.17),
-               bbox_to_anchor=(0.98, 0.57),
-               frameon=True,  # Ensure the border/box is active
-               facecolor='white',  # Set the background color
-               framealpha=1)  # Set transparency (1 = fully opaque, 0 = invisible)
+    legend_kwargs = {'frameon': True, 'facecolor': 'white', 'framealpha': 1}
+    if flag_paper:
+#       legend_kwargs.update({'loc': 'lower right', 'bbox_to_anchor': (0.98, 0.17)})
+        legend_kwargs.update({'loc': 'lower right', 'bbox_to_anchor': (0.98, 0.57)})
+    else:
+        legend_kwargs.update({'loc': 'best'})
+
+    ax1_ts.legend(h1 + h2, l1 + l2, **legend_kwargs)
     ax1_ts.grid(True)
 
 st.pyplot(fig_ts)

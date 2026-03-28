@@ -94,6 +94,82 @@ df,HF_slope_selected = simulate_fresh(
     c_decay=c_decay,
 )
 
+flag_save_csv = True
+if flag_save_csv:
+    import pandas as pd
+    import streamlit as st
+
+    def helper_function(df, **params):
+        # 1. Display the original parameters table
+        st.subheader("Model Parameters")
+        param_df = pd.DataFrame(list(params.items()), columns=['Parameter', 'Value'])
+        st.table(param_df)
+
+        # 2. Extract specific time-based variables
+        st.subheader(f"Stock values at key time points")
+
+        # Get row at exactly fresh_duration (or the closest match)
+        row_fresh = df[df['time'] <= fresh_duration].iloc[-1]
+        # Get the very last row of the simulation
+        row_final = df.iloc[-1]
+
+        # Create the 6 additional rows as requested
+        summary_data = {
+            "Metric": [
+                "Owner Engagement (at end of FRESH)",
+                "Owner Engagement (at final time)",
+                "HF Menu Items (at end of FRESH)",
+                "HF Menu Items (at final time)",
+                "Customer Interest (at end of FRESH)",
+                "Customer Interest (at final time)"
+            ],
+            "Time": [row_fresh['time']] * 3 + [row_final['time']] * 3,
+            "Value": [
+                row_fresh['Restaurant owner engagement'],
+                row_final['Restaurant owner engagement'],
+                row_fresh['HF Menu Items'],
+                row_final['HF Menu Items'],
+                row_fresh['Customer Interest in HF'],
+                row_final['Customer Interest in HF']
+            ]
+        }
+
+        st.table(pd.DataFrame(summary_data))
+
+
+    # Example usage assuming 'results_df' is your loaded CSV data:
+    # helper_function(results_df, fresh_duration=0.1, final_time=final_time, ...)
+
+    def helper_function_old(**kwargs):
+        """
+        Generates a Streamlit table from provided keyword arguments.
+        """
+        # Create a DataFrame where keys are 'Parameter' and values are 'Value'
+        df = pd.DataFrame(list(kwargs.items()), columns=['Parameter', 'Value'])
+
+        # Display as a static table in Streamlit
+        st.table(df)
+
+    # Example usage with your specific values:
+    helper_function(df,
+        final_time=final_time,
+        dt=dt,
+        fresh_duration=fresh_duration,
+        max_restaurant_capacity=max_restaurant_capacity,
+        restaurant_capacity_hf=restaurant_capacity_hf,
+        c_increasing_engagement=c_increasing_engagement,
+        c_decreasing=c_decreasing,
+        c_customer_owner=selected_x,
+        c_owner_menu=c_owner_menu,
+        c_depletion=c_depletion,
+        c_owner_community=c_owner_community,
+        c_community_interest=c_community_interest,
+        c_menu_interest=selected_y,
+        c_decay=c_decay
+    )
+
+    # df.to_csv('../figures/df.csv')
+
 metrics = sustainability_metrics(df, restaurant_capacity_hf)
 
 # --------------------------------------------------

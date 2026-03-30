@@ -94,7 +94,7 @@ df,HF_slope_selected = simulate_fresh(
     c_decay=c_decay,
 )
 
-flag_save_csv = True
+flag_save_csv = False
 if flag_save_csv:
     import pandas as pd
     import streamlit as st
